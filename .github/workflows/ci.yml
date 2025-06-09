@@ -5,43 +5,57 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   train-model:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.8'
+        python-version: '3.9'
     
     - name: Install Miniconda
       uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
-        python-version: 3.8
+        python-version: 3.9
+        activate-environment: palmer_penguins_env
     
     - name: Install MLflow
       shell: bash -l {0}
       run: |
+        conda activate palmer_penguins_env
         pip install mlflow
+    
+    - name: Verify installation
+      shell: bash -l {0}
+      run: |
+        conda activate palmer_penguins_env
+        mlflow --version
+        python --version
     
     - name: Run MLflow Project
       shell: bash -l {0}
       run: |
+        conda activate palmer_penguins_env
         cd MLProject
-        mlflow run .
+        mlflow run . --experiment-name "Palmer_Penguins_Classification_CI"
     
-    - name: Upload model artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: ml-model-artifacts
-        path: |
-          MLProject/mlruns/
-          MLProject/*.pkl
-          MLProject/*.joblib
+    - name: List generated artifacts
+      shell: bash -l {0}
+      run: |
+        echo "Generated files:"
+        find MLProject/ -name "*.pkl" -o -name "*.joblib" -o -name "mlruns" | head -20
+    
+    - name: Show MLflow runs
+      shell: bash -l {0}
+      run: |
+        cd MLProject
+        echo "MLflow runs:"
+        ls -la mlruns/ 2>/dev/null || echo "No mlruns directory found"
