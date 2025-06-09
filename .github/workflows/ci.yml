@@ -19,15 +19,9 @@ jobs:
       with:
         python-version: '3.8'
     
-    - name: Install MLflow
+    - name: Install dependencies
       run: |
-        pip install mlflow
-    
-    - name: Install Conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-update-conda: true
-        python-version: 3.8
+        pip install mlflow pandas scikit-learn seaborn matplotlib
     
     - name: Run MLflow Project
       run: |
@@ -43,4 +37,3 @@ jobs:
           MLProject/mlruns/
           MLProject/*.pkl
           MLProject/*.joblib
-          MLProject/*.h5
